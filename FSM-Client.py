@@ -3,6 +3,7 @@ import ssl
 import re
 import unittest
 import argparse
+import json
 
 class UniversalClient:
     def __init__(self, host, port, use_ssl=False):
@@ -23,20 +24,10 @@ class UniversalClient:
             self.sock.close()
             self.sock = None
 
-    def read_commands_from_file(self, filename):
-        tests = []
-        pair_pattern = re.compile(r'(.+?/.+?)(?=\s|$)')
+    def read_commands_from_json(self, filename):
         with open(filename, 'r') as file:
-            for line in file:
-                pairs = pair_pattern.findall(line.strip())
-                commands = []
-                expected_responses = []
-                for pair in pairs:
-                    command, expected_response = pair.rsplit('/', 1)
-                    commands.append(command.strip() + "\r\n")
-                    expected_responses.append(expected_response)
-                tests.append((commands, expected_responses))
-        return tests
+            data = json.load(file)
+        return data['test_cases']
 
     def send_command(self, command):
         self.sock.send(command.encode())
@@ -64,8 +55,8 @@ def parse_args():
     parser.add_argument('host', type=str, help='Server host address')
     parser.add_argument('port', type=int, help='Server port')
     parser.add_argument('--ssl', action='store_true', help='Use SSL for the connection')
-    parser.add_argument('--commands', type=str, default='commands.txt', help='Path to commands file')
-    parser.add_argument('--continue-on-error', action='store_true', help='Continue on error and trace incorrect responses')    
+    parser.add_argument('--commands', type=str, default='commands.json', help='Path to commands file')
+    parser.add_argument('--continue-on-error', action='store_true', help='Continue on error and trace incorrect responses')   
     return parser.parse_args()
 
 class TestUniversalClient(unittest.TestCase):
@@ -79,14 +70,17 @@ class TestUniversalClient(unittest.TestCase):
         cls.client.close()
 
     def test_protocol_implementation(self):
-        tests = self.client.read_commands_from_file(args.commands)
+        test_cases = self.client.read_commands_from_json(args.commands)
         failures = []
 
-        for test_index, (commands, expected_responses) in enumerate(tests):
+        for test_index, test_case in enumerate(test_cases):
             self.client.disconnect()
             self.client.connect()
             self.client.receive_response()  # Skip server's "hello" message
-            for command, expected_response in zip(commands, expected_responses):
+
+            for command_data in test_case['commands']:
+                command = command_data['command']
+                expected_response = command_data['expected_response']
                 actual_response = self.client.send_command(command)
                 try:
                     self.assertIn(expected_response, actual_response, f"Expected: {expected_response}, but got: {actual_response}")
