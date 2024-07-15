@@ -1,0 +1,58 @@
+{
+  "test_cases": [
+    {
+      "commands": [
+        {"command": "LIST\r\n", "expected_response": "-ERR"},
+        {"command": "RETR 1\r\n", "expected_response": "-ERR"},
+        {"command": "STAT\r\n", "expected_response": "-ERR"},
+        {"command": "DELE 1\r\n", "expected_response": "-ERR"},
+        {"command": "QUIT\r\n", "expected_response": "+OK"}
+      ]
+    },
+    {
+      "commands": [
+        {"command": "USER YOUR_EMAIL\r\n", "expected_response": "+OK"},
+        {"command": "Wr0ngInput\r\n", "expected_response": "-ERR"},
+        {"command": "LIST\r\n", "expected_response": "-ERR"},
+        {"command": "RETR 1\r\n", "expected_response": "-ERR"},
+        {"command": "STAT\r\n", "expected_response": "-ERR"},
+        {"command": "DELE\r\n", "expected_response": "-ERR"},
+        {"command": "QUIT\r\n", "expected_response": "+OK"}
+      ]
+    },
+    {
+      "commands": [
+        {"command": "USER YOUR_EMAIL\r\n", "expected_response": "+OK"},
+        {"command": "PASS WRONG_PASSWORD\r\n", "expected_response": "+OK"},
+        {"command": "Wr0ngInput\r\n", "expected_response": "-ERR"},
+        {"command": "LIST\r\n", "expected_response": "+OK"},
+        {"command": "RETR 1\r\n", "expected_response": "+OK"},
+        {"command": "STAT\r\n", "expected_response": "+OK"},
+        {"command": "DELE 1\r\n", "expected_response": "+OK"},
+        {"command": "QUIT\r\n", "expected_response": "+OK"}
+      ]
+    },
+    {
+      "commands": [
+        {"command": "USER YOUR_EMAIL\r\n", "expected_response": "+OK"},
+        {"command": "PASS WRONG_PASSWORD\r\n", "expected_response": "-ERR"},
+        {"command": "QUIT\r\n", "expected_response": "+OK"}
+      ]
+    },
+    {
+      "commands": [
+        {"command": "USER YOUR_EMAIL\r\n", "expected_response": "+OK"},
+        {"command": "DELE 1\r\n", "expected_response": "-ERR"},
+        {"command": "LIST\r\n", "expected_response": "-ERR"}
+      ]
+    },
+    {
+      "commands": [
+        {"command": "USER YOUR_EMAIL\r\n", "expected_response": "+OK"},
+        {"command": "PASS YOUR_PASSWORD\r\n", "expected_response": "+OK"},
+        {"command": "DELE 1\r\n", "expected_response": "+OK"},
+        {"command": "LIST\r\n", "expected_response": "+OK"}
+      ]
+    }
+  ]
+}
